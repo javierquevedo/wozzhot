@@ -1,0 +1,8 @@
+<div id="logo"> </div>
+<div id="search_form">
+<% form_for :tag, :url => {:controller => "build", :action => "intermediate"} do |f| %>
+     <%= f.text_field :title %>
+        <%= submit_tag "Wazhot?" %>
+<% end %>
+</div>
+<div id="sugestions">E.g: Indie, funny+baby, music+news  </div>
