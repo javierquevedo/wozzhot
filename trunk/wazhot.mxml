@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
+                xmlns="*" layout="absolute">
+<!--    <mx:HTTPService id="getItems" 
+                    url="{'http://localhost:3000/build/results?query=' + query.text}"
+                    result="itemsResultHandler(event);"
+                    useProxy="false">
+    </mx:HTTPService>
+ -->                
+                                   
+                    
+   <!-- <mx:DataGrid id="tagResults" x="27" y="441" width="777" 
+                 height="267" 
+                 dataProvider="{getItems.lastResult.items.item}">
+        <mx:columns>
+            <mx:DataGridColumn headerText="Title" dataField="title" width="150"/>
+            <mx:DataGridColumn headerText="Url" dataField="url" width="240"/>
+            <mx:DataGridColumn headerText="Description" dataField="description" width="200"/>
+        </mx:columns>
+    </mx:DataGrid> -->
+    
+    <mx:Label x="325" y="29" text="Wozzhot!" width="189" height="60" fontSize="36"/>
+    <mx:Button x="449" y="109" label="Button" click="getData()" />
+    <mx:TextInput id="query" x="266" y="109"/>
+
+
+    <!-- Controller -->
+    <mx:Script>
+        <![CDATA[
+        
+    	 import mx.controls.Alert; 
+  		 import mx.rpc.events.ResultEvent;
+  		 import mx.core.Application; 
+	     import mx.controls.TileList;
+	     import mx.controls.Image;
+	     import mx.containers.Panel;
+		 import mx.containers.VBox;
+		 import mx.containers.Tile;
+		 import mx.collections.ArrayCollection;
+		 import mx.rpc.http.mxml.HTTPService;		
+		 
+ 			  [Bindable]
+		   	  private var itemsFeed:XML;
+			
+			public function getData():void
+			{
+  				var httpService:HTTPService = new HTTPService();
+    			httpService.url = 'http://localhost:3000/build/results?query=' + query.text;
+	  			httpService.addEventListener(ResultEvent.RESULT, itemsResultHandler);
+	  			httpService.send();
+  			}
+  			  private function itemsResultHandler(event:ResultEvent):void
+            {
+
+                var httpService:HTTPService = event.target as HTTPService;
+              
+                
+                var tilelist:TileList = new TileList(); 
+		        var image:Image = new Image();
+		      	var panel:Panel = new Panel();
+		      	var tile:Tile = new Tile();
+		      	var vbox:VBox = new VBox();
+		      	var arrayFeed:XML;
+		    
+		      	itemsFeed = httpService.lastResult.items.item as XML;
+		      	
+		      	arrayFeed = httpService.lastResult.items.item as XML;
+		      	
+		      	panel.title="Flickr results";
+		      	panel.width=300;
+		      	panel.height=400;
+		        panel.x=50;
+		        panel.y=50;
+				addChild(panel);
+			    panel.addChild(tile);
+		        tile.addChild(vbox);
+		    
+		        image.source="http://www.google.com/intl/en_ALL/images/logo.gif";
+		        vbox.addChild(image);
+		        	       
+            	
+            	
+            	
+            	
+            	var len:int = itemsFeed.length();
+            	for (var i:int =0; i<len ; i++)
+            	{
+            		vbox.addChild(itemsFeed[i].toString());
+            	}
+            
+           	 httpService.removeEventListener(ResultEvent.RESULT, itemsResultHandler);
+            }
+      ]]>
+    </mx:Script>
+  
+</mx:Application>

@@ -1,0 +1,45 @@
+<h1>Results for: <%= @tag.title %></h1>
+<table border="1">
+<tr>
+<td>
+<h1>Music</h1>
+<ul>
+  <% @tag.items.find_all_by_category("lastfm").each do |res| %>
+    
+    <li><a href="<%= res.url %>"><%= res.title %> </a></li>
+  
+  <% end %>
+</ul>
+</td>
+
+<td>
+<h1> Videos </h1>
+<ul>
+  <% @tag.items.find_all_by_category("youtube").each do |res| %>
+    
+    <li><a href="<%= res.url %>"><%= res.title %> </a></li>
+  
+  <% end %>
+</ul>
+</td>
+</tr>
+</table>
+
+
+
+<h1> Posts </h1>
+<ul>
+  <% @tag.items.find_all_by_category("technorati").each do |res| %>
+    
+    <li><a href="<%= res.url %>"><%= res.title %> </a></li>
+  
+  <% end %>
+</ul>
+<h1> Fotos </h1>
+<ul>
+  <% @tag.items.find_all_by_category("flickr").each do |res| %>
+    
+    <li><a href="<%= res.url %>"><%= res.title %> </a></li>
+  
+  <% end %>
+</ul>

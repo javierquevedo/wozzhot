@@ -1,0 +1,15 @@
+
+<% form_remote_for :tag, :url => {:controller => "build", :action => "parse"} do |f| %>
+    Search: <%= f.text_field :title %>
+        <%= submit_tag "Wazhot?" %>
+<% end %>
+Paramssenc = <%= params[:senc] %>
+<div id="results_all">
+<%= render :partial => @tag%>
+</div>
+
+
+
+
+  
+  

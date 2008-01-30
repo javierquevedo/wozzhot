@@ -1,0 +1,15 @@
+<% if !item.thumbnail %>
+
+<ul>
+
+<li> <a href="<%= item.url %>"><%= item.title %></a> <%= item.description %> </li>
+
+</ul>
+
+<% else %>
+
+<a href="<%= item.url %>"> <img src="<%= item.thumbnail %>" title="<%= item.title %>"/>  </a>
+
+  
+  
+<% end %>

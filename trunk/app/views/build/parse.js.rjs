@@ -1,0 +1,8 @@
+# TODO Operate on the page object
+ 
+#page.visual_effect :highlight, :all_results
+#if @parameter=="lastfm"
+#  page.replace_html :lastfm_results, :partial => 'tag', :object => @tag
+#else
+#   page.replace_html :youtube_results, :all_results, :partial => 'tag', :object => @tag
+#end
