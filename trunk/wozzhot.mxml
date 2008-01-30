@@ -1,0 +1,616 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
+                xmlns="*" layout="absolute"
+                styleName="Application"
+               
+                creationComplete="startUp()">
+	<mx:ApplicationControlBar dock="true" horizontalCenter="0" styleName="Application">
+        <mx:Label 
+        	id="wozzHotLabel"
+            text="Wozzhot!" 
+            fontFamily="Verdana" fontWeight="bold" fontSize="27"
+            fontStyle="normal" color="#21217A"/>
+       
+        <mx:TextInput id="query" width="134" enter="getData()" />
+        <mx:Button label="Search" click="getData()"  width="71" height="22"/>
+        <mx:Grid width="174.5" fontSize="9" borderStyle="none" cornerRadius="5">
+            <mx:GridRow width="100%" height="100%">
+                <mx:GridItem width="100%" height="100%">
+                    <mx:CheckBox id="ckdelicious" selected="true"  label="Delicious"/>
+                </mx:GridItem>
+                <mx:GridItem width="100%" height="100%">
+                    <mx:CheckBox id="ckflickr" selected="true"  label="Flickr"/>
+                </mx:GridItem>
+            </mx:GridRow>
+            <mx:GridRow width="100%" height="100%">
+                <mx:GridItem width="100%" height="100%">
+                    <mx:CheckBox id="cktechnorati" selected="true"  label="Technorati"/>
+                </mx:GridItem>
+                <mx:GridItem width="100%" height="100%">
+                    <mx:CheckBox id="ckyoutube" selected="true" label="Youtube"/>
+                </mx:GridItem>
+            </mx:GridRow>
+        
+        </mx:Grid>
+        <mx:Spacer width="100%"/>
+        <mx:VBox borderStyle="solid" cornerRadius="6" borderThickness="2">
+        
+         <mx:Label text="Hot tags!" width="100%" fontSize="14" fontWeight="bold" textAlign="center" textDecoration="normal" fontStyle="italic" alpha="1.0" />
+        	  
+     
+        	<mx:HBox width="100%" id="hotNowBox"  borderStyle="none" cornerRadius="0"/>
+        </mx:VBox>
+        <mx:Spacer width="100%"/>
+        <mx:Button label="About" click="showAlert(event)" width="61"  fontSize="10" height="22"/>
+        
+    </mx:ApplicationControlBar>
+    
+    
+    <mx:Style>
+    .Application
+    {
+        backgroundColor: #ece5e5;
+  		backgroundGradientColors: #999999, #3399ff;
+   		backgroundGradientAlphas: 0.49, 0.4;
+   		themeColor: #cc9900;
+     	
+    }
+   Panel {
+     backgroundAlpha: 0.34;
+     backgroundColor: #336699;
+     borderColor: #333333;
+     borderThickness: 2;
+     cornerRadius: 8;
+     dropShadowEnabled: true;
+     shadowDirection: right;
+     shadowDistance: 4;
+	}
+	
+	.vboxTitleWindow
+	{
+	borderThickness: 0;
+	borderStyle: none;
+	paddingRight :0;
+	backgroundAlpha: 0;
+	
+		
+	}
+	
+	TabNavigator {
+	backgroundAlpha: 0.7;	
+	}
+	
+	
+TitleWindow {
+   borderStyle: solid;
+   borderColor: #000000;
+   borderAlpha: 0.13;
+   borderThickness: 1;
+   borderThicknessLeft: 21;
+   borderThicknessTop: 29;
+   borderThicknessBottom: 3;
+   borderThicknessRight: 21;
+   roundedBottomCorners: true;
+   cornerRadius: 22;
+   headerHeight: 25;
+   paddingTop: 20;
+   paddingRight: 0;
+   backgroundAlpha: 0.44;
+   highlightAlphas: 0.5, 0;
+   shadowDistance: 7;
+   shadowDirection: right;
+}
+
+	.closeTabButton
+	{
+		paddingLeft:15px;
+	}
+	
+
+    .bottomBar 
+    {
+    		  	borderStyle: solid;
+  				borderColor: #666666;
+   				borderThickness: 3;
+   			    cornerRadius: 9;
+   				fontSize: 12;
+   				verticalAlign: middle;
+   			
+     }
+     
+  
+     
+    </mx:Style> 
+	<mx:Glow id="dissolveEffectin" duration="500" alphaFrom="1.0" alphaTo="0.0" blurXFrom="0.0" blurXTo="50.0" blurYFrom="0.0" blurYTo="50.0" color="0xFF0000"/>
+	<mx:Glow id="dissolveEffectout" duration="500" 
+        alphaFrom="0.0" alphaTo="1.0" 
+        blurXFrom="50.0" blurXTo="0.0" 
+        blurYFrom="50.0" blurYTo="0.0" 
+        color="0xFF0000"/>
+   	<mx:Fade id="fadeIn" duration="500" alphaFrom="0.0" alphaTo="1.0" />
+   	<mx:Fade id="fadeOut" duration="500" alphaFrom="1.0" alphaTo="0.0" />
+   	
+    
+    
+    <!-- Controller -->
+    <mx:Script>
+        <![CDATA[
+        	import mx.utils.ObjectProxy;
+        import mx.events.EffectEvent;
+       	import mx.controls.menuClasses.MenuBarItem;
+        import mx.controls.Label;
+        import mx.core.FlexLoader;
+        	
+       	import mx.controls.Button;
+        import flash.net.navigateToURL;
+        import flash.display.Sprite;
+    	import mx.rpc.events.ResultEvent;
+		import mx.rpc.http.mxml.HTTPService;	
+		import mx.rpc.events.FaultEvent; 	
+  		
+  		import mx.controls.TileList;
+	    import mx.controls.LinkButton;
+	    import mx.controls.Image;
+	    import mx.controls.Text;
+	    
+	    import mx.containers.Panel;
+		import mx.containers.VBox;
+		import mx.containers.HBox;
+		import mx.containers.TitleWindow;
+		import mx.containers.TabNavigator;
+		
+		import mx.effects.Move;
+		import mx.events.DragEvent;
+		import mx.events.CloseEvent;
+        import flash.events.MouseEvent;
+        import flash.events.Event;
+        import mx.core.ScrollPolicy;
+        
+         
+		import mx.collections.ArrayCollection;
+		
+		import mx.controls.Alert; 
+	    import mx.effects.Fade;
+	    
+	   	[bindable]
+	   	public var userquery:String= new String();
+	    
+	   	  private function showAlert(event:Event):void { 
+     	 		
+  			var alert:Alert = Alert.show("Web developed by Javier Quevedo and Antoni Rauls. 2008");
+     		
+    		} 
+			public function startUp():void
+			{
+			
+				
+				getHotNow();
+			
+
+			}
+			private function loadingAnimationLoopIn(event:EffectEvent):void
+			{
+				
+				dissolveEffectout.play();
+				
+				
+			}
+			private function loadingAnimationLoopOut(event:EffectEvent):void
+			{
+				dissolveEffectin.play();
+				
+				
+			}
+			
+			private function loadingAnimationStop():void
+			{
+				
+				dissolveEffectin.removeEventListener(EffectEvent.EFFECT_END,loadingAnimationLoopIn);
+				dissolveEffectout.removeEventListener(EffectEvent.EFFECT_END,loadingAnimationLoopOut);
+				dissolveEffectin.reverse();
+				dissolveEffectout.reverse();
+				
+				
+			}
+			
+			
+			private function loadingAnimationStart():void
+			{
+				dissolveEffectin.target=wozzHotLabel;
+				dissolveEffectout.target=wozzHotLabel;
+				dissolveEffectout.play();
+				dissolveEffectin.addEventListener(EffectEvent.EFFECT_END,loadingAnimationLoopIn);
+				dissolveEffectout.addEventListener(EffectEvent.EFFECT_END,loadingAnimationLoopOut);
+			}
+			public function getHotNow():void
+			{
+				var httpService:HTTPService = new HTTPService();
+    			httpService.url = 'http://localhost:3000/build/hotnow'
+	  			httpService.addEventListener(ResultEvent.RESULT, hotNowResultHandler);
+	  			httpService.addEventListener(FaultEvent.FAULT ,getHotNowFault );
+	  			httpService.requestTimeout = 30;
+	  			httpService.send();
+  			}
+		 
+ 			public function getData():void
+			{
+				
+				
+				if (query.text=='')
+					return; 
+					
+				userquery=query.text;
+				loadingAnimationStart();
+				var httpService:HTTPService = new HTTPService();
+				//httpService.contentType="application/xml";
+				
+    			httpService.url = 'http://localhost:3000/build/results?query=' + 
+    			userquery + 
+    			'&yt=' + ckyoutube.selected +
+    			'&tc=' + cktechnorati.selected +
+    			'&dc=' + ckdelicious.selected +
+    			'&fl=' + ckflickr.selected;
+	  			httpService.addEventListener(ResultEvent.RESULT, itemsResultHandler);
+	  			httpService.addEventListener(FaultEvent.FAULT , itemsResultFault);
+	  			httpService.requestTimeout = 30;
+	  			httpService.send();
+	  			
+	  			
+  			}
+  			
+  			private function closeTab(event:MouseEvent):void
+            {
+  				//var parent : Object = event.parent;
+  				var tabNavigator: TabNavigator = event.target.parent.getChildAt(0) as TabNavigator;
+  				if (tabNavigator.numChildren > 1)
+					tabNavigator.removeChildAt(tabNavigator.selectedIndex);
+				else
+				{
+				//var titleWindow:TitleWindow = eve as TitleWindow;
+               	//var container:Object;
+               	
+                //titleWindow.removeAllChildren()
+                this.removeChild(tabNavigator.parent.parent);
+				}	
+					
+  		
+  			
+            }
+  			private function openURL(event:MouseEvent):void
+
+            {
+                var link : Object = event.target as Object;
+                if (link is mx.core.FlexLoader)
+                	link = link.parent; 
+
+                // navigateToURL(urlRequest, "_blank"); 
+             	var urlRequest:URLRequest = new URLRequest(link.name);
+            	navigateToURL(urlRequest, "_blank");    
+            }
+  				
+  			private function cleanupChildren(object:Object):void
+  			{
+  					if (object.hasChild())
+  					{
+  						cleanupChildren(object.getChildren([0]));
+  					}
+  					
+  			}
+  			
+  			private function clearResults():void
+  			{
+  			
+  				while (this.numChildren > 3)
+  				{
+  					this.removeChildAt(this.numChildren);
+  				}
+  					
+  			}
+  		 	private function titleWindow_close(event:CloseEvent):void {
+               	var titleWindow:TitleWindow = event.target as TitleWindow;
+               	//var container:Object;
+                titleWindow.removeAllChildren()
+                
+                
+                this.removeChild(titleWindow);
+                
+            }
+            
+            private function mouseDown(event:MouseEvent):void 
+            {
+            	
+            	var parent:Object = new Object();
+            	//object = event.target;
+            	if (event.target is mx.core.FlexLoader)
+            		return;
+            	
+            	if (event.target.className=="TitleWindow" || (event.target.className =="UITextField"))
+            	{
+            	parent = event.currentTarget.parent;
+				// put on top
+				event.currentTarget.parent.removeChild(event.currentTarget);
+				parent.addChild(event.currentTarget);
+				//
+      			event.currentTarget.startDrag();	
+            	}	
+            	else
+            	{
+            	
+            	return;
+            	}
+ 			    
+			}
+		
+			private function mouseReleased(event:MouseEvent):void {
+				var parent:Object = new Object();    			
+    			var object:Object = event.target;
+    			while (object.name!="window")
+            		object=object.parent;
+            		object.stopDrag();
+            	}
+  	
+  		private function hotNowQuery (event : MouseEvent):void {
+  			var linkButton : LinkButton = event.currentTarget as LinkButton;
+  			query.text = linkButton.label;
+  			getData();
+  			
+  		}
+  		
+ 
+  				
+  	
+  		
+  		
+  		private function buildhotNow(arrayFeed: ArrayCollection):void
+  		{
+  			if (hotNowBox.numChildren > 0)
+  				hotNowBox.removeAllChildren();
+  				
+  			var linkButton:LinkButton;	
+  			var len:int = arrayFeed.length;
+  			var i:int;
+  			
+  			if (len > 5) 
+  				len = 5;
+  				
+  			for (i=0; i<len ; i++)
+  				{
+  				linkButton = new LinkButton();
+  				linkButton.label=arrayFeed[i].title;
+  				linkButton.addEventListener(MouseEvent.CLICK, hotNowQuery);
+  				hotNowBox.addChild(linkButton);
+  				
+  				}
+  				
+  				
+  			
+  		}
+  		
+  		
+  			private function buildAllResults(arrayFeed:ArrayCollection):void
+  			{ 
+  				//clearResults();
+		      	
+  					
+  					
+  				//this.addChild(resultsView);
+		       if (ckflickr.selected)
+		      	buildResults("flickr",arrayFeed, 50, 35);
+			   if (cktechnorati.selected)
+		      	buildResults("technorati",arrayFeed,  450, 35);
+		       if (ckdelicious.selected)	
+		      	buildResults("delicious",arrayFeed,50, 500);
+		      
+		      if (ckyoutube.selected)
+		      	buildResults("youtube",arrayFeed, 450, 500);
+		      	
+  			}
+  			
+  	
+  			
+  		
+  			private function buildResults (serviceName:String, 
+  				arrayFeed:ArrayCollection,
+  				x:int,y:int):void
+  			{
+  				var link:LinkButton; 
+		      	var image:Image;               
+                var tilelist:TileList = new TileList(); 
+		      	var titleWindow:TitleWindow;
+		      	var vbox:VBox = new VBox();
+		      	var button:Button = new Button();
+		      	var tabnavigator:TabNavigator = new TabNavigator();
+		      	var found:Boolean=false;
+		      	var children:Array=this.getChildren();
+		      	
+		      	for (var i:int=0;i<this.numChildren;i++)
+		      	{
+      			if (children[i].id == serviceName)
+		      			{
+		      				titleWindow=children[i];
+		      				 found=true;
+		      			}
+		      		
+		      		
+		      	}   
+		      	
+		      	if (!found)
+		      	{
+				
+				titleWindow = new TitleWindow();
+			    titleWindow.showCloseButton=true;
+		      	titleWindow.title=serviceName + ' results';
+		      	titleWindow.width=380;
+		      	titleWindow.height=450;
+		        titleWindow.x=x;
+		        titleWindow.y=y;
+		        titleWindow.id=serviceName;
+		        titleWindow.name="window";
+		        
+		        
+		        titleWindow.clipContent=false;
+		        
+			        
+		        vbox.horizontalScrollPolicy=ScrollPolicy.OFF;
+		        vbox.verticalScrollPolicy=ScrollPolicy.OFF;
+		        
+		        vbox.styleName="vboxTitleWindow";
+		        vbox.clipContent=false;
+		        
+				titleWindow.addChild(vbox);
+				titleWindow.horizontalScrollPolicy=ScrollPolicy.OFF;
+				titleWindow.verticalScrollPolicy=ScrollPolicy.OFF;
+				
+				
+				//tabnavigator.height=375;
+				
+				//tabnavigator.styleName="vboxTitleWindow";
+				tabnavigator.horizontalScrollPolicy=ScrollPolicy.OFF;
+				tabnavigator.verticalScrollPolicy=ScrollPolicy.OFF;
+				tabnavigator.name="tab";
+				
+				vbox.addChild(tabnavigator);
+				vbox.addChild(button);
+				
+				button.label="Close tab";
+				button.styleName="closeTabButton";		
+				button.addEventListener(MouseEvent.CLICK, closeTab);        
+				vbox=new VBox();
+				vbox.width=372;
+				vbox.height=360;
+				//vbox.styleName="vboxTitleWindow";
+				
+				vbox.styleName="vboxTitleWindow";
+				tabnavigator.addChild(vbox);
+				
+		   
+				// drag & drop
+		        titleWindow.addEventListener(MouseEvent.MOUSE_DOWN, mouseDown); 
+		        titleWindow.addEventListener(MouseEvent.MOUSE_UP, mouseReleased);
+				titleWindow.addEventListener(CloseEvent.CLOSE, titleWindow_close);
+			
+				vbox.removeEventListener(MouseEvent.MOUSE_DOWN, mouseDown);
+				vbox.removeEventListener(MouseEvent.MOUSE_UP, mouseReleased);
+			
+		      	
+				vbox.label =userquery;
+		        
+		        this.addChild(titleWindow);
+			
+		       }
+		       if (found)
+		       {
+		       	var temp : Object = titleWindow.getChildAt(0);
+		       	tabnavigator=temp.getChildAt(0) as TabNavigator;;
+		       	// getChildByName("tab") as TabNavigator;
+		       	vbox.label =userquery;
+		        tabnavigator.addChild(vbox);
+		
+		        tabnavigator.selectedIndex=tabnavigator.numChildren-1;
+		        
+		 	
+		       }
+					
+		        
+		       	var len:int = arrayFeed.length;
+		       	var resultsCount:int = 0;
+		       	var label:Label = new Label();
+		       	label.text="Results for " + userquery +": ";
+		       	vbox.addChild(label);
+            	for (i=0; i<len ; i++)
+            	{
+            		if (arrayFeed[i].category==serviceName)
+            		{
+            			resultsCount++;
+            			if (arrayFeed[i].thumbnail.hasOwnProperty("nil") == false)
+            			{
+            				image = new Image();
+            				image.source=arrayFeed[i].thumbnail;
+            				image.name=arrayFeed[i].url;
+            				image.addEventListener( MouseEvent.MOUSE_UP, openURL);
+							vbox.addChild(image);	
+            			}
+            			
+            			link = new LinkButton();
+            			link.label=arrayFeed[i].title;
+            			link.name = arrayFeed[i].url;
+            			link.alpha=1;
+            			
+            				//link.addEventListener(MouseEvent.CLICK, (navigateToURL(urlRequest, "_blank")));
+            				//click="navigateToURL(new URLRequest http://www.macromedia.com/flex'))
+            				//function(evt:MouseEvent):void { navigateToURL(new URLRequest("http://www.terra.es/"+ i as String)); } );
+            			link.addEventListener( MouseEvent.MOUSE_UP, openURL);
+            			vbox.addChild(link);
+	
+            		}
+            	}
+            	if (resultsCount==0)
+            	{
+            		//var label : Label= new Label();	label.text = ("Your search didn't have any results");
+					label.text = label.text+"no results";
+            		//vbox.addChild(label);
+            	}	
+            	vbox.label=vbox.label + "\(" + resultsCount + "\)";
+           
+  			}
+  			
+  			
+  			  private function itemsResultFault(fault:FaultEvent):void
+            {
+            var alert:Alert = Alert.show("Error, " + fault.message);
+            
+            }
+  			
+  			private function getHotNowFault(event:FaultEvent): void
+  			{
+  				var label : Label = new Label();
+  				label.text="Hot tags unnavailable";
+  				hotNowBox.addChild(label);
+  				
+  			}
+  			
+	
+			 private function hotNowResultHandler(event:ResultEvent):void
+            {
+
+                var httpService:HTTPService = event.target as HTTPService;
+    	      	var arrayFeed:ArrayCollection;
+    	   if ( !httpService.lastResult.hasOwnProperty("nil-classes"))
+    	   {
+    	   	if (httpService.lastResult.tagstats.tagstat is mx.utils.ObjectProxy)
+    	   	{
+    	   		arrayFeed = new ArrayCollection;
+    	   		arrayFeed.addItem(httpService.lastResult.tagstats.tagstat);	  
+    	   		buildhotNow(arrayFeed);    	
+		      }
+    	   		else
+    	   		{ 
+		      	arrayFeed = httpService.lastResult.tagstats.tagstat;	      	
+		      	buildhotNow(arrayFeed);
+    	   		}
+    	   }  
+		      	httpService.removeEventListener(ResultEvent.RESULT, hotNowResultHandler);
+            }
+  			  private function itemsResultHandler(event:ResultEvent):void
+            {
+
+                var httpService:HTTPService = event.target as HTTPService;
+    	      	var arrayFeed:ArrayCollection = new ArrayCollection;
+		      	
+		      	if ( !httpService.lastResult.hasOwnProperty("nil-classes"))
+		      		if (httpService.lastResult.items.item is mx.utils.ObjectProxy)	
+		      		arrayFeed.addItem(httpService.lastResult.items.item);
+		      		else	
+		      		arrayFeed = httpService.lastResult.items.item;
+   	
+		      	loadingAnimationStop();        	
+		      	buildAllResults(arrayFeed);
+		      	getHotNow();	
+		      	    	
+		      	httpService.removeEventListener(ResultEvent.RESULT, itemsResultHandler);
+            }
+      ]]>
+    </mx:Script>
+    <mx:Label text="&quot;If it's not beta, its not web2.0&quot;" x="10" y="10"/>
+  
+</mx:Application>
